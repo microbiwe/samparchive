@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Microb Archive</title>
+    <style>
+        /* ===== БАЗОВЫЕ СТИЛИ ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ===== СВЕТЛАЯ ТЕМА ===== */
+        body.light {
+            background: #f8f6ff;
+            color: #1a0b2e;
+        }
+
+        body.light .header {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: #fff;
+        }
+
+        body.light .card {
+            background: #fff;
+            border: 1px solid #e5e1f0;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
+        }
+
+        body.light .card:hover {
+            box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
+        }
+
+        body.light .theme-toggle {
+            background: #fff;
+            color: #7c3aed;
+        }
+
+        body.light .admin-panel {
+            background: #fff;
+            border: 1px solid #e5e1f0;
+        }
+
+        body.light input,
+        body.light textarea,
+        body.light select {
+            background: #f8f6ff;
+            border: 1px solid #d5cfe8;
+            color: #1a0b2e;
+        }
+
+        body.light .btn-primary {
+            background: #7c3aed;
+            color: #fff;
+        }
+
+        body.light .btn-primary:hover {
+            background: #6d28d9;
+        }
+
+        /* ===== ТЁМНО-ФИОЛЕТОВАЯ ТЕМА ===== */
+        body.dark {
+            background: #0f0620;
+            color: #d4c4f0;
+        }
+
+        body.dark .header {
+            background: linear-gradient(135deg, #2d1b69, #1a0b3a);
+            color: #d4c4f0;
+            border-bottom: 1px solid #4a2d8a;
+        }
+
+        body.dark .card {
+            background: #1a0b3a;
+            border: 1px solid #3d2580;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark .card:hover {
+            box-shadow: 0 8px 24px rgba(124, 58, 237, 0.25);
+            border-color: #7c3aed;
+        }
+
+        body.dark .theme-toggle {
+            background: #2d1b69;
+            color: #d4c4f0;
+            border: 1px solid #4a2d8a;
+        }
+
+        body.dark .theme-toggle:hover {
+            background: #3d2580;
+        }
+
+        body.dark .admin-panel {
+            background: #1a0b3a;
+            border: 1px solid #3d2580;
+        }
+
+        body.dark input,
+        body.dark textarea,
+        body.dark select {
+            background: #0f0620;
+            border: 1px solid #3d2580;
+            color: #d4c4f0;
+        }
+
+        body.dark input:focus,
+        body.dark textarea:focus,
+        body.dark select:focus {
+            border-color: #7c3aed;
+            outline: none;
+        }
+
+        body.dark .btn-primary {
+            background: #7c3aed;
+            color: #fff;
+        }
+
+        body.dark .btn-primary:hover {
+            background: #6d28d9;
+        }
+
+        /* ===== ОБЩИЕ КОМПОНЕНТЫ ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Шапка */
+        .header {
+            padding: 40px 0 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.85;
+            margin-top: 8px;
+        }
+
+        .header .badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 20px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            font-size: 0.9rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Переключатель темы */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        /* Кнопка Telegram */
+        .telegram-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            background: #0088cc;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 136, 204, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+        }
+
+        .telegram-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 28px rgba(0, 136, 204, 0.6);
+        }
+
+        .telegram-btn span {
+            font-size: 1.3rem;
+        }
+
+        /* Навигация */
+        .nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            padding: 24px 0 12px;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.15);
+        }
+
+        .nav a {
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        body.light .nav a {
+            color: #4a2d7a;
+            background: #f0ecf9;
+        }
+
+        body.light .nav a:hover {
+            background: #7c3aed;
+            color: #fff;
+        }
+
+        body.dark .nav a {
+            color: #b4a0d8;
+            background: #2d1b69;
+        }
+
+        body.dark .nav a:hover {
+            background: #7c3aed;
+            color: #fff;
+        }
+
+        .nav a.active {
+            background: #7c3aed !important;
+            color: #fff !important;
+        }
+
+        /* Карточки */
+        .catalog {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+            padding: 30px 0;
+        }
+
+        .card {
+            border-radius: 16px;
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+        }
+
+        .card .preview {
+            width: 100%;
+            height: 180px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: rgba(124, 58, 237, 0.1);
+            margin-bottom: 12px;
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 6px;
+        }
+
+        .card .meta {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .card .desc {
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card .rating {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(124, 58, 237, 0.15);
+        }
+
+        .card .rating .score {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .card .rating button {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        body.light .card .rating button:hover {
+            background: #f0ecf9;
+        }
+        body.dark .card .rating button:hover {
+            background: #2d1b69;
+        }
+
+        .card .btn-detail {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+
+        body.light .card .btn-detail {
+            background: #7c3aed;
+            color: #fff;
+        }
+        body.light .card .btn-detail:hover {
+            background: #6d28d9;
+        }
+
+        body.dark .card .btn-detail {
+            background: #7c3aed;
+            color: #fff;
+        }
+        body.dark .card .btn-detail:hover {
+            background: #6d28d9;
+        }
+
+        /* Кнопка скачать */
+        .btn-download {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: #22c55e;
+            color: #fff;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .btn-download:hover {
+            background: #16a34a;
+            transform: scale(1.02);
+        }
+
+        /* Страница мода (детально) */
+        .detail-page {
+            padding: 30px 0;
+        }
+
+        .detail-page .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        body.light .detail-page .back-link {
+            color: #7c3aed;
+        }
+        body.dark .detail-page .back-link {
+            color: #b4a0d8;
+        }
+
+        .detail-page .detail-preview {
+            max-width: 100%;
+            border-radius: 16px;
+            margin: 16px 0;
+            max-height: 400px;
+            object-fit: cover;
+        }
+
+        /* Админ-панель */
+        .admin-section {
+            padding: 30px 0;
+        }
+
+        .admin-panel {
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .admin-panel h2 {
+            margin-bottom: 20px;
+        }
+
+        .admin-panel label {
+            display: block;
+            font-weight: 600;
+            margin-top: 16px;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .admin-panel input,
+        .admin-panel textarea,
+        .admin-panel select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .admin-panel textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .admin-panel .btn-primary {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+
+        .admin-panel .btn-primary:hover {
+            transform: scale(1.02);
+        }
+
+        .admin-panel .password-input {
+            margin-bottom: 16px;
+        }
+
+        .admin-panel .admin-list {
+            margin-top: 24px;
+            border-top: 1px solid rgba(124, 58, 237, 0.15);
+            padding-top: 20px;
+        }
+
+        .admin-panel .admin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.08);
+        }
+
+        .admin-panel .admin-item .delete-btn {
+            background: #ef4444;
+            color: #fff;
+            border: none;
+            padding: 4px 14px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .admin-panel .admin-item .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        /* Сообщения */
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transform: translateX(120%);
+            transition: transform 0.4s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .toast.error {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* Адаптив */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            .catalog {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-panel {
+                padding: 20px;
+            }
+
+            .telegram-btn {
+                padding: 12px 18px;
+                font-size: 0.9rem;
+            }
+
+            .telegram-btn span {
+                font-size: 1.1rem;
+            }
+
+            .nav a {
+                font-size: 0.85rem;
+                padding: 6px 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .theme-toggle {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+                top: 12px;
+                right: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ ===== -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">🌙</button>
+
+    <!-- ===== КНОПКА TELEGRAM ===== -->
+    <a href="https://t.me/onyxith" target="_blank" class="telegram-btn" id="telegramBtn">
+        <span>✉️</span> Связаться со мной
+    </a>
+
+    <!-- ===== УВЕДОМЛЕНИЯ ===== -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== ШАПКА ===== -->
+    <header class="header" id="header">
+        <div class="container">
+            <h1>📦 Microb Archive</h1>
+            <p class="subtitle">6 лет в мире SAMP — сборки, скрипты, текстуры, графика, оружие</p>
+            <div class="badge">🧠 Вайб-кодинг + 6 лет опыта = контент нового поколения</div>
+        </div>
+    </header>
+
+    <!-- ===== НАВИГАЦИЯ ===== -->
+    <nav class="nav container" id="mainNav">
+        <a href="#" data-category="all" class="active">🏠 Все</a>
+        <a href="#" data-category="Сборки">📦 Сборки</a>
+        <a href="#" data-category="Скрипты">💻 Скрипты</a>
+        <a href="#" data-category="Текстуры">🎨 Текстуры</a>
+        <a href="#" data-category="Графика">🖼 Графика</a>
+        <a href="#" data-category="Оружие">🔫 Оружие</a>
+        <a href="#" data-category="admin" style="background:rgba(239,68,68,0.2);">🔒 Админ</a>
+    </nav>
+
+    <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+    <main class="container" id="mainContent">
+        <!-- Здесь динамически рендерится контент -->
+    </main>
+
+    <!-- ===== ПОДВАЛ ===== -->
+    <footer style="text-align:center;padding:40px 20px 20px;opacity:0.5;font-size:0.9rem;">
+        <p>© 2026 Microb Archive — сделано с 💜 и вайб-кодингом</p>
+    </footer>
+
+    <script>
+        // ===========================================
+        // 1. ДАННЫЕ (хранятся в localStorage)
+        // ===========================================
+
+        const DEFAULT_DATA = {
+            items: [{
+                id: 'samp-crime-pack',
+                category: 'Сборки',
+                title: 'SAMP Crime Pack v3.0',
+                description: 'Полная переделка LS под криминальный стиль, новые текстуры и звуки.',
+                version: '3.0',
+                date: '2026-08-10',
+                image: 'https://via.placeholder.com/600x400/7c3aed/ffffff?text=Crime+Pack',
+                download: '#',
+                rating: 42,
+                votes: 0,
+                details: 'В этой сборке переработаны все текстуры города, изменены модели машин, добавлены новые скины для банд и полностью переработанная карта. Установка через стандартный мод-лоадер.'
+            }, {
+                id: 'samp-script-anticheat',
+                category: 'Скрипты',
+                title: 'AntiCheat System v2.1',
+                description: 'Продвинутая система защиты от читов для SAMP серверов.',
+                version: '2.1',
+                date: '2026-08-08',
+                image: 'https://via.placeholder.com/600x400/6d28d9/ffffff?text=AntiCheat',
+                download: '#',
+                rating: 38,
+                votes: 0,
+                details: 'Обнаруживает подозрительную активность, авто-кликеры, скоростные хаки и телепорты. Легко настраивается под любой сервер.'
+            }, {
+                id: 'samp-textures-hd',
+                category: 'Текстуры',
+                title: 'HD Textures Pack v4.0',
+                description: 'Замена всех стандартных текстур SAMP на HD версии (2K).',
+                version: '4.0',
+                date: '2026-08-05',
+                image: 'https://via.placeholder.com/600x400/4a2d8a/ffffff?text=HD+Textures',
+                download: '#',
+                rating: 56,
+                votes: 0,
+                details: 'Все текстуры дорог, зданий, неба и воды заменены на качественные аналоги. Сохраняет оригинальный стиль игры.'
+            }, {
+                id: 'samp-gun-m4',
+                category: 'Оружие',
+                title: 'M4 Custom Model v1.2',
+                description: 'Новая модель M4 с реалистичной анимацией перезарядки.',
+                version: '1.2',
+                date: '2026-08-03',
+                image: 'https://via.placeholder.com/600x400/7c3aed/ffffff?text=M4+Model',
+                download: '#',
+                rating: 29,
+                votes: 0,
+                details: 'Модель M4 с высоким полигоном, реалистичные звуки выстрелов и новая анимация прицеливания.'
+            }, {
+                id: 'samp-graphic-hud',
+                category: 'Графика',
+                title: 'Neon HUD v2.0',
+                description: 'Неоновый интерфейс с анимированными элементами для SAMP.',
+                version: '2.0',
+                date: '2026-07-30',
+                image: 'https://via.placeholder.com/600x400/2d1b69/ffffff?text=Neon+HUD',
+                download: '#',
+                rating: 47,
+                votes: 0,
+                details: 'Полностью переработанный интерфейс: неоновые цвета, анимированные иконки здоровья и брони, новый дизайн чата.'
+            }]
+        };
+
+        // Загружаем данные
+        let data = loadData();
+
+        function loadData() {
+            try {
+                const saved = localStorage.getItem('microbArchiveData');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && parsed.items) return parsed;
+                }
+            } catch (e) {}
+            saveData(DEFAULT_DATA);
+            return JSON.parse(JSON.stringify(DEFAULT_DATA));
+        }
+
+        function saveData(dataToSave) {
+            localStorage.setItem('microbArchiveData', JSON.stringify(dataToSave));
+            data = dataToSave;
+        }
+
+        // ===========================================
+        // 2. ТЕМА (светлая/тёмная)
+        // ===========================================
+
+        const THEME_KEY = 'microbTheme';
+        let currentTheme = localStorage.getItem(THEME_KEY) || 'dark';
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+
+        function applyTheme(theme) {
+            body.classList.remove('light', 'dark');
+            body.classList.add(theme);
+            themeToggle.textContent = theme === 'dark' ? '🌙' : '☀️';
+            localStorage.setItem(THEME_KEY, theme);
+            currentTheme = theme;
+        }
+
+        applyTheme(currentTheme);
+
+        themeToggle.addEventListener('click', () => {
+            applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // ===========================================
+        // 3. РЕНДЕРИНГ
+        // ===========================================
+
+        let currentCategory = 'all';
+        let currentView = 'catalog'; // 'catalog' | 'detail'
+        let currentItemId = null;
+
+        const mainContent = document.getElementById('mainContent');
+
+        function render() {
+            if (currentView === 'detail' && currentItemId) {
+                renderDetail(currentItemId);
+                return;
+            }
+            renderCatalog(currentCategory);
+        }
+
+        function renderCatalog(category) {
+            const filtered = category === 'all' ?
+                data.items :
+                data.items.filter(item => item.category === category);
+
+            // Обновляем активную ссылку
+            document.querySelectorAll('.nav a').forEach(link => {
+                link.classList.toggle('active', link.dataset.category === category);
+            });
+
+            let html = `
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:20px 0 10px;">
+                    <h2 style="font-size:1.8rem;">${category === 'all' ? '📚 Все моды' : category}</h2>
+                    <span style="opacity:0.6;">${filtered.length} модов</span>
+                </div>
+                <div class="catalog">
+            `;
+
+            if (filtered.length === 0) {
+                html += `<p style="grid-column:1/-1;text-align:center;opacity:0.5;padding:40px 0;">Пока нет модов в этой категории</p>`;
+            }
+
+            filtered.forEach(item => {
+                html += `
+                    <div class="card">
+                        <img class="preview" src="${item.image}" alt="${item.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/600x400/7c3aed/ffffff?text=No+Preview'">
+                        <h3>${item.title}</h3>
+                        <div class="meta">📌 ${item.category} • v${item.version} • ${item.date}</div>
+                        <div class="desc">${item.description}</div>
+                        <div class="rating">
+                            <span class="score">⭐ ${item.rating}</span>
+                            <button onclick="vote('${item.id}', 1)" title="Нравится">👍</button>
+                            <button onclick="vote('${item.id}', -1)" title="Не нравится">👎</button>
+                            <span style="font-size:0.8rem;opacity:0.5;">${item.votes || 0} голосов</span>
+                        </div>
+                        <a href="#" onclick="showDetail('${item.id}');return false;" class="btn-detail">🔍 Подробнее</a>
+                        <a href="${item.download}" class="btn-download" onclick="event.stopPropagation();">⬇️ Скачать</a>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            mainContent.innerHTML = html;
+            currentView = 'catalog';
+            currentItemId = null;
+        }
+
+        function renderDetail(id) {
+            const item = data.items.find(i => i.id === id);
+            if (!item) {
+                renderCatalog('all');
+                return;
+            }
+
+            let html = `
+                <div class="detail-page">
+                    <a href="#" onclick="renderCatalog('${currentCategory}');return false;" class="back-link">← Назад к каталогу</a>
+                    <h2 style="font-size:2.2rem;">${item.title}</h2>
+                    <div style="display:flex;gap:16px;flex-wrap:wrap;opacity:0.7;margin:8px 0 16px;">
+                        <span>📌 ${item.category}</span>
+                        <span>📦 v${item.version}</span>
+                        <span>📅 ${item.date}</span>
+                        <span>⭐ ${item.rating}</span>
+                    </div>
+                    <img class="detail-preview" src="${item.image}" alt="${item.title}" onerror="this.style.display='none'">
+                    <div style="font-size:1.1rem;line-height:1.8;margin:20px 0;">
+                        ${item.details || item.description}
+                    </div>
+                    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:20px;">
+                        <a href="${item.download}" class="btn-download" style="font-size:1.1rem;padding:12px 32px;">⬇️ Скачать ${item.title}</a>
+                        <a href="#" onclick="renderCatalog('${currentCategory}');return false;" class="btn-detail" style="font-size:1.1rem;padding:12px 32px;">← Ко всем модам</a>
+                    </div>
+                </div>
+            `;
+
+            mainContent.innerHTML = html;
+            currentView = 'detail';
+            currentItemId = id;
+        }
+
+        // ===========================================
+        // 4. ГОЛОСОВАНИЕ (оценки)
+        // ===========================================
+
+        function vote(id, delta) {
+            const item = data.items.find(i => i.id === id);
+            if (!item) return;
+
+            // Проверяем, голосовал ли уже пользователь
+            const votedKey = `voted_${id}`;
+            if (localStorage.getItem(votedKey)) {
+                showToast('Вы уже голосовали за этот мод!', 'error');
+                return;
+            }
+
+            item.rating += delta;
+            item.votes = (item.votes || 0) + 1;
+            localStorage.setItem(votedKey, 'true');
+            saveData(data);
+            render();
+            showToast(`✅ Спасибо! Рейтинг изменён`, 'success');
+        }
+
+        // ===========================================
+        // 5. НАВИГАЦИЯ
+        // ===========================================
+
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const cat = link.dataset.category;
+
+                if (cat === 'admin') {
+                    showAdminPanel();
+                    return;
+                }
+
+                currentCategory = cat;
+                currentView = 'catalog';
+                currentItemId = null;
+                renderCatalog(cat);
+            });
+        });
+
+        function showDetail(id) {
+            currentItemId = id;
+            currentView = 'detail';
+            renderDetail(id);
+        }
+
+        // ===========================================
+        // 6. АДМИН-ПАНЕЛЬ
+        // ===========================================
+
+        const ADMIN_PASSWORD = 'kska78279'; // ← СМЕНИ ПАРОЛЬ! Это твой пароль для входа
+
+        let adminAuthenticated = false;
+
+        function showAdminPanel() {
+            let html = `
+                <div class="admin-section">
+                    <div class="admin-panel">
+                        <h2>🔒 Админ-панель</h2>
+            `;
+
+            if (!adminAuthenticated) {
+                html += `
+                        <p style="margin-bottom:16px;">Введите пароль для управления модами</p>
+                        <div class="password-input">
+                            <input type="password" id="adminPassword" placeholder="Введите пароль" style="width:100%;padding:12px;border-radius:10px;border:1px solid #7c3aed;">
+                        </div>
+                        <button class="btn-primary" onclick="loginAdmin()">🔑 Войти</button>
+                        <div style="margin-top:12px;font-size:0.8rem;opacity:0.4;">Пароль: microb2026 (смените его в коде)</div>
+                `;
+            } else {
+                html += `
+                        <p style="margin-bottom:16px;color:#22c55e;">✅ Вы авторизованы как microbiwe</p>
+                        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+                            <button class="btn-primary" onclick="logoutAdmin()" style="background:#6b7280;">🚪 Выйти</button>
+                            <button class="btn-primary" onclick="exportData()" style="background:#3b82f6;">💾 Экспорт</button>
+                            <button class="btn-primary" onclick="importData()" style="background:#8b5cf6;">📥 Импорт</button>
+                        </div>
+                        <hr style="border-color:rgba(124,58,237,0.2);margin:16px 0;">
+                        <h3>➕ Добавить новый мод</h3>
+                        <form id="addModForm" onsubmit="addMod(event)">
+                            <label>Название</label>
+                            <input type="text" id="modTitle" required placeholder="Например: SAMP Crime Pack v3.0">
+
+                            <label>Категория</label>
+                            <select id="modCategory" required>
+                                <option value="Сборки">Сборки</option>
+                                <option value="Скрипты">Скрипты</option>
+                                <option value="Текстуры">Текстуры</option>
+                                <option value="Графика">Графика</option>
+                                <option value="Оружие">Оружие</option>
+                            </select>
+
+                            <label>Краткое описание</label>
+                            <textarea id="modDesc" required placeholder="Кратко о моде, 1-2 предложения"></textarea>
+
+                            <label>Полное описание (детали)</label>
+                            <textarea id="modDetails" placeholder="Подробное описание, особенности, инструкция..."></textarea>
+
+                            <label>Версия</label>
+                            <input type="text" id="modVersion" required placeholder="1.0">
+
+                            <label>Дата (ГГГГ-ММ-ДД)</label>
+                            <input type="date" id="modDate" required>
+
+                            <label>Ссылка на превью (картинка)</label>
+                            <input type="url" id="modImage" placeholder="https://example.com/preview.jpg">
+
+                            <label>Ссылка на скачивание</label>
+                            <input type="url" id="modDownload" required placeholder="https://example.com/mod.zip">
+
+                            <button type="submit" class="btn-primary">📤 Опубликовать мод</button>
+                        </form>
+
+                        <div class="admin-list">
+                            <h3>📋 Все моды (${data.items.length})</h3>
+                            ${data.items.map(item => `
+                                <div class="admin-item">
+                                    <span><strong>${item.title}</strong> <span style="opacity:0.5;font-size:0.85rem;">(${item.category})</span></span>
+                                    <button class="delete-btn" onclick="deleteMod('${item.id}')">🗑 Удалить</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                `;
+            }
+
+            html += `</div></div>`;
+            mainContent.innerHTML = html;
+            currentView = 'admin';
+
+            // Если авторизованы, устанавливаем дату по умолчанию
+            if (adminAuthenticated) {
+                const dateInput = document.getElementById('modDate');
+                if (dateInput) {
+                    dateInput.value = new Date().toISOString().split('T')[0];
+                }
+            }
+        }
+
+        function loginAdmin() {
+            const input = document.getElementById('adminPassword');
+            if (!input) return;
+
+            if (input.value === ADMIN_PASSWORD) {
+                adminAuthenticated = true;
+                showToast('✅ Добро пожаловать, microbiwe!', 'success');
+                showAdminPanel();
+            } else {
+                showToast('❌ Неверный пароль!', 'error');
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function logoutAdmin() {
+            adminAuthenticated = false;
+            showAdminPanel();
+            showToast('👋 Вы вышли из админ-панели', 'success');
+        }
+
+        // ===========================================
+        // 7. ДОБАВЛЕНИЕ / УДАЛЕНИЕ МОДОВ
+        // ===========================================
+
+        function addMod(e) {
+            e.preventDefault();
+
+            if (!adminAuthenticated) {
+                showToast('❌ Сначала авторизуйтесь!', 'error');
+                return;
+            }
+
+            const title = document.getElementById('modTitle').value.trim();
+            const category = document.getElementById('modCategory').value;
+            const desc = document.getElementById('modDesc').value.trim();
+            const details = document.getElementById('modDetails').value.trim() || desc;
+            const version = document.getElementById('modVersion').value.trim();
+            const date = document.getElementById('modDate').value;
+            const image = document.getElementById('modImage').value.trim() ||
+                'https://via.placeholder.com/600x400/7c3aed/ffffff?text=' + encodeURIComponent(title);
+            const download = document.getElementById('modDownload').value.trim();
+
+            if (!title || !desc || !version || !date || !download) {
+                showToast('❌ Заполните все обязательные поля!', 'error');
+                return;
+            }
+
+            // Генерируем ID
+            const id = 'mod-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+
+            const newItem = {
+                id,
+                category,
+                title,
+                description: desc,
+                details,
+                version,
+                date,
+                image,
+                download,
+                rating: 0,
+                votes: 0
+            };
+
+            data.items.push(newItem);
+            saveData(data);
+            renderCatalog(currentCategory);
+            showToast(`✅ Мод "${title}" успешно добавлен!`, 'success');
+
+            // Очищаем форму
+            document.getElementById('addModForm').reset();
+            document.getElementById('modDate').value = new Date().toISOString().split('T')[0];
+        }
+
+        function deleteMod(id) {
+            if (!adminAuthenticated) {
+                showToast('❌ Сначала авторизуйтесь!', 'error');
+                return;
+            }
+
+            const item = data.items.find(i => i.id === id);
+            if (!item) return;
+
+            if (!confirm(`Удалить мод "${item.title}"?`)) return;
+
+            data.items = data.items.filter(i => i.id !== id);
+            saveData(data);
+            showToast(`🗑 Мод "${item.title}" удалён`, 'success');
+            showAdminPanel();
+        }
+
+        // ===========================================
+        // 8. ЭКСПОРТ / ИМПОРТ данных
+        // ===========================================
+
+        function exportData() {
+            if (!adminAuthenticated) {
+                showToast('❌ Сначала авторизуйтесь!', 'error');
+                return;
+            }
+
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `microb-archive-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('💾 Данные экспортированы!', 'success');
+        }
+
+        function importData() {
+            if (!adminAuthenticated) {
+                showToast('❌ Сначала авторизуйтесь!', 'error');
+                return;
+            }
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const imported = JSON.parse(ev.target.result);
+                        if (imported && imported.items) {
+                            data.items = imported.items;
+                            saveData(data);
+                            showToast('📥 Данные импортированы!', 'success');
+                            showAdminPanel();
+                        } else {
+                            showToast('❌ Неверный формат файла!', 'error');
+                        }
+                    } catch (err) {
+                        showToast('❌ Ошибка чтения файла!', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // ===========================================
+        // 9. УВЕДОМЛЕНИЯ (Toast)
+        // ===========================================
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // ===========================================
+        // 10. ИНИЦИАЛИЗАЦИЯ
+        // ===========================================
+
+        // По умолчанию показываем каталог "Все"
+        renderCatalog('all');
+
+        // Проверяем, есть ли параметр ?admin в URL
+        if (window.location.search.includes('admin')) {
+            showAdminPanel();
+        }
+
+        console.log('🚀 Microb Archive загружен!');
+        console.log('📦 Всего модов:', data.items.length);
+        console.log('🔒 Пароль админа:', ADMIN_PASSWORD);
+        console.log('💡 Чтобы открыть админку, нажми "Админ" в навигации');
+    </script>
+</body>
+</html>
