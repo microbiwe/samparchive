@@ -1,45 +1,115 @@
 // ===========================================
-// 1. ДАННЫЕ
+// 1. КОНФИГУРАЦИЯ
 // ===========================================
 
-const DEFAULT_DATA = {
-    items: [{
-        id: 'pdlog',
-        category: 'Скрипты',
-        title: 'PDLog — Полный учёт доходов для ArizonaRP',
-        description: 'Логируй все доходы: ларцы, дивиденды, AZ Coins, зарплата PD, депозиты.',
-        version: '1.0',
-        date: '2026-08-11',
-        image: 'img/preview/pdlog.jpg',
-        download: 'https://drive.google.com/uc?export=download&id=ВАШ_ID_ФАЙЛА',
-        rating: 0,
-        votes: 0,
-        details: 'PDLog — инструмент для тех, кто хочет держать руку на пульсе своих финансов в ArizonaRP. Мод автоматически логирует все поступления денег на твой счёт. Что логируется: ларцы, дивиденды, AZ Coins, зарплата PD, депозиты. Подходит для полицейских, бизнесменов и всех, кто хочет контролировать свои финансы.'
-    }]
+const CONFIG = {
+    owner: 'microbiwe',
+    repo: 'samparchive',
+    path: 'items.json',
+    branch: 'main'
 };
 
-// Загружаем данные
-let data = loadData();
+// ===========================================
+// 2. ДАННЫЕ
+// ===========================================
 
-function loadData() {
+let data = { items: [] };
+let currentCategory = 'all';
+let currentView = 'catalog';
+let currentItemId = null;
+let editingId = null;
+const mainContent = document.getElementById('mainContent');
+
+// ===========================================
+// 3. ЗАГРУЗКА ДАННЫХ (СПОКОЙНАЯ ВЕРСИЯ)
+// ===========================================
+
+async function loadData() {
+    let loaded = false;
+    
+    // 1. Пытаемся загрузить с GitHub
     try {
-        const saved = localStorage.getItem('microbArchiveData');
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            if (parsed && parsed.items) return parsed;
+        const url = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${CONFIG.path}?t=${Date.now()}`;
+        const response = await fetch(url);
+        if (response.ok) {
+            const jsonData = await response.json();
+            if (jsonData && jsonData.items && jsonData.items.length > 0) {
+                data = jsonData;
+                localStorage.setItem('microbArchiveData', JSON.stringify(data));
+                console.log('✅ Загружено с GitHub');
+                loaded = true;
+            }
         }
-    } catch (e) {}
-    saveData(DEFAULT_DATA);
-    return JSON.parse(JSON.stringify(DEFAULT_DATA));
-}
+    } catch (e) {
+        console.log('⚠️ GitHub не отвечает');
+    }
 
-function saveData(dataToSave) {
-    localStorage.setItem('microbArchiveData', JSON.stringify(dataToSave));
-    data = dataToSave;
+    // 2. Если GitHub не помог — берём из localStorage
+    if (!loaded) {
+        try {
+            const saved = localStorage.getItem('microbArchiveData');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                if (parsed && parsed.items && parsed.items.length > 0) {
+                    data = parsed;
+                    console.log('✅ Загружено из localStorage');
+                    loaded = true;
+                }
+            }
+        } catch (e) {}
+    }
+
+    // 3. Если данных нет — создаём чистый архив
+    if (!loaded) {
+        data = { items: [] };
+        localStorage.setItem('microbArchiveData', JSON.stringify(data));
+        console.log('✅ Создан новый архив');
+    }
+
+    renderCatalog('all');
+    updateAdminUI();
 }
 
 // ===========================================
-// 2. ТЕМА
+// 4. СОХРАНЕНИЕ (через скачивание файла)
+// ===========================================
+
+function downloadJSON() {
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'items.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('✅ Файл items.json скачан! Загрузи его в корень репозитория', 'success');
+}
+
+// ===========================================
+// 5. ОЧИСТКА КЭША
+// ===========================================
+
+function clearCacheAndReload() {
+    localStorage.removeItem('microbArchiveData');
+    localStorage.removeItem('microbTheme');
+    // Удаляем все голоса
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+        if (key.startsWith('voted_')) {
+            localStorage.removeItem(key);
+        }
+    });
+    showToast('🧹 Кэш очищен! Страница перезагрузится...', 'success');
+    setTimeout(() => {
+        location.reload();
+    }, 1500);
+}
+
+// ===========================================
+// 6. ТЕМА
 // ===========================================
 
 const THEME_KEY = 'microbTheme';
@@ -63,16 +133,12 @@ if (themeToggle) {
 }
 
 // ===========================================
-// 3. РЕНДЕРИНГ
+// 7. РЕНДЕРИНГ (БЕЗОПАСНАЯ ВЕРСИЯ)
 // ===========================================
 
-let currentCategory = 'all';
-let currentView = 'catalog';
-let currentItemId = null;
-let editingId = null;
-const mainContent = document.getElementById('mainContent');
-
 window.renderCatalog = function(category) {
+    if (!mainContent) return;
+    
     currentCategory = category || 'all';
     currentView = 'catalog';
     currentItemId = null;
@@ -81,6 +147,7 @@ window.renderCatalog = function(category) {
         data.items :
         data.items.filter(item => item.category === currentCategory);
 
+    // Обновляем навигацию
     document.querySelectorAll('.nav a').forEach(link => {
         link.classList.toggle('active', link.dataset.category === currentCategory);
     });
@@ -94,7 +161,7 @@ window.renderCatalog = function(category) {
     `;
 
     if (filtered.length === 0) {
-        html += `<p style="grid-column:1/-1;text-align:center;opacity:0.5;padding:40px 0;">Пока нет модов в этой категории</p>`;
+        html += `<p style="grid-column:1/-1;text-align:center;opacity:0.5;padding:40px 0;">Пока нет модов. Добавь первый через админку!</p>`;
     }
 
     filtered.forEach(item => {
@@ -151,7 +218,7 @@ window.showDetail = function(id) {
 };
 
 // ===========================================
-// 4. ГОЛОСОВАНИЕ
+// 8. ГОЛОСОВАНИЕ
 // ===========================================
 
 window.vote = function(id, delta) {
@@ -167,7 +234,7 @@ window.vote = function(id, delta) {
     item.rating += delta;
     item.votes = (item.votes || 0) + 1;
     localStorage.setItem(votedKey, 'true');
-    saveData(data);
+    localStorage.setItem('microbArchiveData', JSON.stringify(data));
 
     if (currentView === 'detail' && currentItemId === id) {
         showDetail(id);
@@ -178,7 +245,7 @@ window.vote = function(id, delta) {
 };
 
 // ===========================================
-// 5. НАВИГАЦИЯ
+// 9. НАВИГАЦИЯ
 // ===========================================
 
 document.querySelectorAll('.nav a').forEach(link => {
@@ -196,11 +263,19 @@ document.querySelectorAll('.nav a').forEach(link => {
 });
 
 // ===========================================
-// 6. АДМИНКА
+// 10. АДМИНКА (С НОВЫМИ КНОПКАМИ)
 // ===========================================
 
 const ADMIN_PASSWORD = 'kska78279';
 let adminAuthenticated = false;
+
+function updateAdminUI() {
+    // Эта функция обновляет счётчик модов в админке, если она открыта
+    const list = document.querySelector('.admin-list h3');
+    if (list) {
+        list.textContent = `📋 Все моды (${data.items.length})`;
+    }
+}
 
 window.showAdminPanel = function() {
     let html = `
@@ -222,8 +297,16 @@ window.showAdminPanel = function() {
                 <p style="margin-bottom:16px;color:#22c55e;">✅ Вы авторизованы как microbiwe</p>
                 <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
                     <button class="btn-primary" onclick="logoutAdmin()" style="background:#6b7280;">🚪 Выйти</button>
-                    <button class="btn-primary" onclick="exportData()" style="background:#3b82f6;">💾 Экспорт</button>
-                    <button class="btn-primary" onclick="importData()" style="background:#8b5cf6;">📥 Импорт</button>
+                    <button class="btn-primary" onclick="downloadJSON()" style="background:#22c55e;">💾 Скачать items.json</button>
+                    <button class="btn-primary" onclick="clearCacheAndReload()" style="background:#ef4444;">🧹 Очистить кэш</button>
+                </div>
+                <div style="background:rgba(34,197,94,0.1);border:1px solid #22c55e;border-radius:10px;padding:12px;margin-bottom:20px;">
+                    <p style="font-size:0.9rem;margin:0;">
+                        📌 <strong>Важно!</strong> После добавления или удаления модов:<br>
+                        1️⃣ Нажми <strong>"💾 Скачать items.json"</strong><br>
+                        2️⃣ Загрузи этот файл в корень репозитория на GitHub<br>
+                        3️⃣ Обнови страницу — изменения появятся!
+                    </p>
                 </div>
                 <hr style="border-color:rgba(124,58,237,0.2);margin:16px 0;">
                 <h3>${editingId ? '✏️ Редактировать мод' : '➕ Добавить новый мод'}</h3>
@@ -261,7 +344,7 @@ window.showAdminPanel = function() {
                     <label>Ссылка на скачивание</label>
                     <input type="url" id="modDownload" required placeholder="https://drive.google.com/uc?export=download&id=ID">
                     <div style="font-size:0.8rem;opacity:0.5;margin-top:4px;">
-                        📥 Загрузи файл на Google Drive → Поделиться → Замени /view на /download
+                        📥 Вставь прямую ссылку на скачивание
                     </div>
 
                     <button type="submit" class="btn-primary">
@@ -297,6 +380,10 @@ window.showAdminPanel = function() {
     }
 };
 
+// ===========================================
+// 11. АВТОРИЗАЦИЯ
+// ===========================================
+
 window.loginAdmin = function() {
     const input = document.getElementById('adminPassword');
     if (!input) return;
@@ -322,6 +409,10 @@ window.cancelEdit = function() {
     editingId = null;
     showAdminPanel();
 };
+
+// ===========================================
+// 12. УПРАВЛЕНИЕ МОДАМИ
+// ===========================================
 
 window.editMod = function(id) {
     if (!adminAuthenticated) {
@@ -392,9 +483,15 @@ window.saveMod = function(e) {
         showToast(`✅ Мод "${title}" добавлен!`, 'success');
     }
 
-    saveData(data);
+    // Сохраняем в localStorage
+    localStorage.setItem('microbArchiveData', JSON.stringify(data));
+    
     renderCatalog(currentCategory);
     showAdminPanel();
+    updateAdminUI();
+    
+    // Напоминаем про скачивание JSON
+    showToast('📌 Не забудь скачать items.json и загрузить на GitHub!', 'success');
 };
 
 window.deleteMod = function(id) {
@@ -407,82 +504,41 @@ window.deleteMod = function(id) {
     if (!confirm(`Удалить мод "${item.title}"?`)) return;
 
     data.items = data.items.filter(i => i.id !== id);
-    saveData(data);
+    localStorage.setItem('microbArchiveData', JSON.stringify(data));
+    
     showToast(`🗑 Мод "${item.title}" удалён`, 'success');
     showAdminPanel();
-};
-
-window.exportData = function() {
-    if (!adminAuthenticated) {
-        showToast('❌ Сначала авторизуйтесь!', 'error');
-        return;
-    }
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `microb-archive-backup-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('💾 Данные экспортированы!', 'success');
-};
-
-window.importData = function() {
-    if (!adminAuthenticated) {
-        showToast('❌ Сначала авторизуйтесь!', 'error');
-        return;
-    }
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            try {
-                const imported = JSON.parse(ev.target.result);
-                if (imported && imported.items) {
-                    data.items = imported.items;
-                    saveData(data);
-                    showToast('📥 Данные импортированы!', 'success');
-                    showAdminPanel();
-                } else {
-                    showToast('❌ Неверный формат файла!', 'error');
-                }
-            } catch (err) {
-                showToast('❌ Ошибка чтения файла!', 'error');
-            }
-        };
-        reader.readAsText(file);
-    };
-    input.click();
+    updateAdminUI();
+    
+    // Напоминаем про скачивание JSON
+    showToast('📌 Не забудь скачать items.json и загрузить на GitHub!', 'success');
 };
 
 // ===========================================
-// 7. УВЕДОМЛЕНИЯ
+// 13. УВЕДОМЛЕНИЯ
 // ===========================================
 
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
+    if (!toast) return;
     toast.textContent = message;
     toast.className = `toast ${type} show`;
     clearTimeout(toast._timeout);
     toast._timeout = setTimeout(() => {
         toast.classList.remove('show');
-    }, 3500);
+    }, 4000);
 }
 
 // ===========================================
-// 8. ЗАПУСК
+// 14. ЗАПУСК
 // ===========================================
 
-renderCatalog('all');
+loadData();
 
 if (window.location.search.includes('admin')) {
-    showAdminPanel();
+    setTimeout(showAdminPanel, 500);
 }
 
 console.log('🚀 Microb Archive загружен!');
 console.log('📦 Всего модов:', data.items.length);
+console.log('📌 Чтобы сохранить изменения, нажми "Скачать items.json" в админке');
