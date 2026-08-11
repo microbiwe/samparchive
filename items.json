@@ -1,1 +1,17 @@
-{"items": []}
+{
+  "items": [
+    {
+      "id": "mod-1786412477006",
+      "category": "Скрипты",
+      "title": "PDLog - твой трекер заработка на Arizona RP",
+      "description": "Легкий учет всех доходов за PayDay",
+      "details": "Считает все доходы за PayDay:\n\nДивиденды\nЗарплату\nДепозит\nЛарцы\nАЗ Коины",
+      "version": "1",
+      "date": "2026-08-11",
+      "image": "img/preview/IMG_0140.jpeg",
+      "download": "https://drive.google.com/uc?export=download&id=15bnNdifau54GuIp6loR1c_V2EHjVB7t4",
+      "rating": 0,
+      "votes": 0
+    }
+  ]
+}
